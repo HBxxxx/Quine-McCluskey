@@ -1,16 +1,38 @@
+import re
+
 minterms = [] #To store the minterms which are input by user.
 tables = [] #To store the result of every turn's result.
 ua = [] #To store the prime implicant.
 ue = [] #To store the essential prime implicant.
 va = [] #To store the minterms which has the information about the links to prime implicant.
 ve = [] #To store the minterms which are poppoed out in the term of finding essential prime implicant.
+data_int = []
+data_str = []
+bits = 0
 
-def get_data():
-	print "Please input the minterms, and input -1 to quit."
-	num = input()
+def get_data(data_str, data_int):
+	global bits
+	print "Please input the minterms:"
+	print "e.g. 0+2+3+8+10"
 
-	while num != -1:
-		i = num 
+	user_input = raw_input()
+
+	data_str = re.findall('\d+',user_input)
+	for i in data_str:
+		i = int(i) 
+		data_int.append(i)
+
+	data_int.sort()
+	data_int.sort(reverse = True)
+
+	t = data_int[0]
+	while t:
+		t /= 2
+		bits += 1
+def process_data():
+
+	for num in data_int:
+		i = num
 		string = "" #int to binary string
 		for j in range(bits):
 			string += str(i % 2)
@@ -26,8 +48,6 @@ def get_data():
 		new_minterm = {'bin': string, 'status': 0, '1': time, 'link': [num]};
 		minterms.append(new_minterm)
 		
-		num = input()
-
 	#sort the list according to number of one
 	minterms.sort(key=lambda k: k['1'])
 
@@ -76,6 +96,13 @@ def combine(minterms):
 	lenth = len(tables)
 	for i in tables[lenth-1]:
 		i['link'].sort()
+def dash_replace(i,j):
+	for m in range(bits):
+		if i['bin'][m] != j['bin'][m]:
+			i['bin'] = ''
+			i['bin'] += (j['bin'][:m] + '_' + j['bin'][m+1:])
+			break			
+	return i['bin']		
 def get_prime(primes):
 	for table in tables:
 		for minterm in table:
@@ -93,17 +120,6 @@ def get_prime(primes):
 				primes.pop(j)
 			j += 1
 		i += 1
-
-
-
-def dash_replace(i,j):
-	for m in range(bits):
-		if i['bin'][m] != j['bin'][m]:
-			i['bin'] = ''
-			i['bin'] += (j['bin'][:m] + '_' + j['bin'][m+1:])
-			break			
-	return i['bin']
-
 def make_ua(ua):
 	for u in ua:
 		for num in u['link']:
@@ -111,7 +127,6 @@ def make_ua(ua):
 				if v['num'] == num:
 					v['link'].append(u['bin'])
 					break
-
 def get_essential_prime():
 	vt = va[:]
 	for v in vt:
@@ -149,7 +164,6 @@ def get_essential_prime():
 						if v['num'] == num:
 							index = va.index(v)
 							va.pop(index)
-
 def print_result():
 	result = ''
 	for u in ue:
@@ -170,10 +184,8 @@ def print_result():
 
 
 #The start of the program.
-print "Please input the number of variables:"
-bits = input()
-
-get_data()
+get_data(data_str, data_int)
+process_data()
 combine(minterms)
 get_prime(ua)
 make_ua(ua)
